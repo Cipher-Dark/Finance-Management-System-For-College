@@ -45,81 +45,61 @@ if (isset($_POST['search'])) {
                 exit();
             } else {
                 $result3 = $stmt2->get_result(); // data from default value
-                $stmt4 = $conn->prepare("SELECT * FROM allowance");
-                $stmt4->execute();
-                if (!$stmt4) {
-                    $error = "Somthing Went Wrong";
+                if ($result && $result->num_rows > 0) {
+
+                    $rowlvl = $result2->fetch_assoc(); //data pay matrix
+
+                    $row = $result->fetch_assoc(); //data of emp_details
+
+                    $row2 = $result3->fetch_assoc(); //data of default value
+
+
+                    // assigning the basic salery of the employee 
+                    $_SESSION['level'] = $rowlvl[$level];
+
+                    // assigning data from row
+                    $_SESSION['name'] = $row['Emp_name'];
+                    $_SESSION['id'] = $row['Emp_id'];
+                    $_SESSION['aadhar'] = $row['Aadhar_no'];
+                    $_SESSION['city'] = $row['city'];
+                    $_SESSION['data'] = "Data Found";
+                    $_SESSION['laukya'] = $level;
+                    // assigning data from Default Value table
+                    $_SESSION['da'] = $row2['DearnessAllowance'];
+                    $_SESSION['hra'] = $row2['HouseRentAllowance'];
+                    $_SESSION['gpf'] = $row2['gpf'];
+                    $_SESSION['nps'] = $row2['nps'];
+                    $_SESSION['giss'] = $row2['gis_savi'];
+                    $_SESSION['gisi'] = $row2['gis_insc'];
+                    $cityy = $row['city'];
+                    if ($level >= 12) {
+                        $_SESSION['sghs'] = 1000;
+                    } else {
+                        $_SESSION['sghs'] = 650;
+                    }
+                    // checking allowance city
+                    $sql1 = "select * from allowance_city where city_name = '$cityy' ";
+                    $sqll = mysqli_query($conn, $sql1);
+                    if (!$sqll) {
+                        $_SESSION['ba'] = 'N/A';
+                        $_SESSION['hill'] = 'N/A';
+                    } else {
+                        $all_clty = mysqli_fetch_assoc($sqll);
+                        if ($all_clty['code'] == 'border') {
+                            $_SESSION['ba'] = $row2['BoarderAreaAllowance'];
+                            $_SESSION['hill'] = 'N/A';
+                        } elseif ($all_clty['code'] == 'hill') {
+                            $_SESSION['hill'] = $row2['HillAllowamce'];
+                            $_SESSION['ba'] = 'N/A';
+                        }
+                    }
+                    header("Location: ../pro/admin.php");
+                } else {
+                    $error = "No Such Id or Name";
                     header("Location: ../pro/admin.php?error=" . urlencode($error));
                     exit();
-                } else {
-                    $result4 = $stmt4->get_result(); // data from allowance
-
-                    if ($result && $result->num_rows > 0) {
-
-                        $rowlvl = $result2->fetch_assoc(); //data pay matrix
-
-                        $row = $result->fetch_assoc(); //data of emp_details
-
-                        $row2 = $result3->fetch_assoc(); //data of default value
-
-                        $row3 = $result4->fetch_assoc(); //data of allowance city
-
-                        // assigning the basic salery of the employee 
-                        $_SESSION['level'] = $rowlvl[$level];
-
-                        // assigning data from row
-                        $_SESSION['name'] = $row['Emp_name'];
-                        $_SESSION['id'] = $row['Emp_id'];
-                        $_SESSION['aadhar'] = $row['Aadhar_no'];
-                        $_SESSION['city'] = $row['city'];
-                        $_SESSION['data'] = "Data Found";
-                        $_SESSION['laukya'] = $level;
-                        // assigning data from Default Value table
-                        $_SESSION['da'] = $row2['DearnessAllowance'];
-                        $_SESSION['hra'] = $row2['HouseRentAllowance'];
-                        $_SESSION['gpf'] = $row2['gpf'];
-                        $_SESSION['nps'] = $row2['nps'];
-                        $_SESSION['giss'] = $row2['gis_savi'];
-                        $_SESSION['gisi'] = $row2['gis_insc'];
-                        $cityy = $row['city'];
-                        if ($level >= 12) {
-                            $_SESSION['sghs'] = 1000;
-                        } else {
-                            $_SESSION['sghs'] = 650;
-                        }
-
-                        // checking allowance city
-
-                        $sql1 = "select * from allowance where border_allowance = '$cityy' ";
-                        $sql_border = mysqli_query($conn, $sql1);
-                        $sql2 = "select * from allowance WHERE hill_allowance = '$cityy'";
-                        $sql_hill = mysqli_query($conn, $sql2);
-                        if (!$sql_border) {
-                            $_SESSION['ba'] = 'N/A';
-                        } else {
-                            $_SESSION['hill'] = 'N/A';
-                            $_SESSION['ba'] = $row2['BoarderAreaAllowance'];
-                        }
-                        if (!$sql_hill) {
-                            $_SESSION['hill'] = 'N/A';
-                        } else {
-                            $_SESSION['ba'] = 'N/A';
-                            $_SESSION['hill'] = $row2['HillAllowamce'];
-                        }
-                        //  else {
-                        // $error = $_SESSION['ba'];
-                        // echo $_SESSION['hill'];
-                        // header("Location: ../pro/admin.php?error=" . urlencode($error));
-                        // exit();
-                        // }
-                        header("Location: ../pro/admin.php");
-                    } else {
-                        $error = "No Such Id or Name";
-                        header("Location: ../pro/admin.php?error=" . urlencode($error));
-                        exit();
-                    }
-                    $stmt->close();
                 }
+                $stmt->close();
             }
         }
     }
